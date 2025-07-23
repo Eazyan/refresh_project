@@ -1,0 +1,192 @@
+/* === Общие стили для вида задач === */
+
+
+.app-container {
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 800px;
+  background-color: #1a1e2e;
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 30px 30px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative; /* Для позиционирования кнопки */
+}
+
+.app-container h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 10px;
+  margin-bottom: 25px;
+  padding-left: 20px;
+  border-left: 4px solid #5061FC;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.task-item {
+  background-color: #232638;
+  color: #fff;
+  border-radius: 10px;
+  height: 120px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.task-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  background-color: #2a2d40;
+}
+
+/* Делаем разные цвета для карточек */
+.task-item:nth-child(1) {
+  border-bottom: 3px solid #5061FC;
+}
+
+.task-item:nth-child(2) {
+  border-bottom: 3px solid #4CAF50;
+}
+
+.task-item:nth-child(3) {
+  border-bottom: 3px solid #E91E63;
+}
+
+/* Индикаторы внизу карточек */
+.task-item::after {
+  content: "•••";
+  position: absolute;
+  bottom: 10px;
+  letter-spacing: 2px;
+  font-size: 10px;
+  color: #5061FC;
+}
+
+.task-item:nth-child(1)::after {
+  color: #5061FC;
+}
+
+.task-item:nth-child(2)::after {
+  color: #4CAF50;
+}
+
+.task-item:nth-child(3)::after {
+  color: #E91E63;
+}
+
+/* Добавляем адаптивность для маленьких экранов */
+@media (max-width: 992px) {
+  .task-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    width: 95%;
+    height: 95vh;
+    padding: 15px;
+  }
+  
+  .task-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .task-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* === Стили для формы добавления задачи (Кнопка + поле) === */
+
+.add-task-form {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-task-input {
+  width: 200px;
+  height: 38px;
+  background-color: #232638;
+  border: 1px solid #3a3d52;
+  border-radius: 20px;
+  padding: 0 15px;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.add-task-input:focus {
+  border-color: #5061FC;
+}
+
+/* Общие стили для всех кнопок добавления задач */
+.add-task-button {
+  height: 38px;
+  background-color: #5061FC;
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 0 20px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(80, 97, 252, 0.2);
+}
+
+/* Добавляем иконку + перед текстом кнопки */
+.add-task-button::before {
+  content: "+";
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* Стили для кнопки в режиме "отдельно стоящая" */
+.add-task-button--standalone {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+}
+
+/* Эффект при наведении для всех кнопок */
+.add-task-button:hover {
+  background-color: #4353d9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(80, 97, 252, 0.3);
+}
