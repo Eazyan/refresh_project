@@ -1,0 +1,55 @@
+.task-item {
+    background-color: #232638;
+    color: #fff;
+    border-radius: 10px;
+    height: 120px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .task-item:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    background-color: #2a2d40;
+  }
+  
+  /* Делаем разные цвета для карточек */
+  .task-item:nth-child(1) {
+    border-bottom: 3px solid #5061FC;
+  }
+  
+  .task-item:nth-child(2) {
+    border-bottom: 3px solid #4CAF50;
+  }
+  
+  .task-item:nth-child(3) {
+    border-bottom: 3px solid #E91E63;
+  }
+  
+  /* Индикаторы внизу карточек */
+  .task-item::after {
+    content: "•••";
+    position: absolute;
+    bottom: 10px;
+    letter-spacing: 2px;
+    font-size: 10px;
+    color: #5061FC;
+  }
+  
+  .task-item:nth-child(1)::after {
+    color: #5061FC;
+  }
+  
+  .task-item:nth-child(2)::after {
+    color: #4CAF50;
+  }
+  
+  .task-item:nth-child(3)::after {
+    color: #E91E63;
+  }

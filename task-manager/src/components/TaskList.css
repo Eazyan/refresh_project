@@ -1,0 +1,28 @@
+.task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+@media (max-width: 992px) {
+    .task-list {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .task-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .task-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }

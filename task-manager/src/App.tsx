@@ -1,6 +1,8 @@
 import './App.css'
 import { useState } from 'react';
-import { v4 as uuid } from 'uuid'; // <-- ДОБАВЬТЕ ЭТУ СТРОКУ
+import { v4 as uuid } from 'uuid';
+import TaskList from './components/TaskList';
+import TaskForm from './components/TaskForm';
 
 function App() {
 
@@ -50,17 +52,11 @@ function App() {
         <h1>Мои задачи</h1>
 
         {showInput ? (
-          <form onSubmit={handleAddTask} className='add-task-form'>
-            <input 
-              type="text"
-              placeholder="Что нужно сделать?"
-              value={inputValue}
-              onChange={(event) => setInputValue(event.target.value)}
-              className='add-task-input'
-              autoFocus
-            />
-            <button type="submit" className='add-task-button add-task-button--in-form'>Добавить</button>
-          </form>
+          <TaskForm
+          inputValue={inputValue}
+          onInputChange={setInputValue}
+          onFormSubmit={handleAddTask}
+          />
         ) : (
           <button 
             className='add-task-button add-task-button--standalone'
@@ -70,15 +66,10 @@ function App() {
           </button>
         )}
 
-        <ul className='task-list'>
-          {
-            tasks.map(task => (
-              <li key={task.id} className='task-item' onClick={() => handleDeleteTask(task.id)}>
-                {task.text}
-              </li>
-            ))
-          }
-        </ul>
+        <TaskList
+          tasks={tasks}
+          handleDelete={handleDeleteTask}
+        />
 
       </div>
   )

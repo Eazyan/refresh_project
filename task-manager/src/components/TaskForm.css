@@ -1,0 +1,66 @@
+.add-task-form {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .add-task-input {
+    width: 200px;
+    height: 38px;
+    background-color: #232638;
+    border: 1px solid #3a3d52;
+    border-radius: 20px;
+    padding: 0 15px;
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  
+  .add-task-input:focus {
+    border-color: #5061FC;
+  }
+  
+  /* Общие стили для всех кнопок добавления задач */
+  .add-task-button {
+    height: 38px;
+    background-color: #5061FC;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(80, 97, 252, 0.2);
+  }
+  
+  /* Добавляем иконку + перед текстом кнопки */
+  .add-task-button::before {
+    content: "+";
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  
+  /* Стили для кнопки в режиме "отдельно стоящая" */
+  .add-task-button--standalone {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+  }
+  
+  /* Эффект при наведении для всех кнопок */
+  .add-task-button:hover {
+    background-color: #4353d9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(80, 97, 252, 0.3);
+  }
