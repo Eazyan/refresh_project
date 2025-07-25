@@ -1,5 +1,3 @@
-/* Стили для формы и кнопки добавления задач */
-
 /* Контейнер для кнопки и формы */
 .task-action-container {
   position: fixed;
@@ -45,12 +43,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  color: white;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+  will-change: transform, opacity;
   left: 0;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease; /* Анимация вращения */
-  opacity: 1;
-  pointer-events: none; /* Чтобы нельзя было кликнуть по иконке отдельно */
 }
 
 /* Улучшение стиля иконки с использованием псевдоэлементов для красивой анимации */
@@ -61,6 +57,7 @@
   background-color: white;
   border-radius: 2px;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform;
 }
 
 .add-task-button__icon::before {
@@ -85,8 +82,11 @@
   align-items: center;
   padding: 0;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Улучшенная анимация */
-  cursor: pointer; /* Указатель в виде кнопки, когда форма скрыта */
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              background-color 0.3s ease, 
+              box-shadow 0.3s ease;
+  cursor: pointer;
+  will-change: width, background-color;
 }
 
 /* Состояние формы, когда она скрыта (превращена в кнопку) */
@@ -94,14 +94,14 @@
   width: 56px;
   background-color: #5061FC;
   box-shadow: 0 4px 10px rgba(80, 97, 252, 0.3);
-  pointer-events: auto; /* Разрешаем взаимодействие */
-  cursor: pointer; /* Явно указываем курсор */
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 /* Состояние формы, когда она видима */
 .add-task-form.visible {
   width: 100%;
-  cursor: default; /* Обычный курсор для видимой формы */
+  cursor: default;
 }
 
 /* Поле ввода */
@@ -116,7 +116,7 @@
   font-size: 0.9rem;
   outline: none;
   opacity: 0;
-  transition: opacity 0.2s ease 0.15s; /* Небольшая задержка для красивого появления */
+  transition: opacity 0.2s ease 0.15s;
 }
 
 .add-task-form.visible .add-task-input {
@@ -143,7 +143,10 @@
   justify-content: center;
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 0.2s ease 0.2s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease; /* Улучшенная пружинистая анимация */
+  transition: opacity 0.2s ease 0.2s, 
+              transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              background-color 0.2s ease;
+  will-change: transform, opacity;
 }
 
 .add-task-form.visible .add-task-submit {
@@ -153,7 +156,7 @@
 
 .add-task-submit:hover {
   background-color: #4353d9;
-  transform: scale(1.05); /* Небольшой эффект при наведении */
+  transform: scale(1.05);
 }
 
 /* Иконка на кнопке отправки */
