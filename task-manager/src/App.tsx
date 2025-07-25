@@ -1,45 +1,30 @@
 import './App.css'
-import { useState } from 'react';
-import { v4 as uuid } from 'uuid';
+import { useState, useReducer } from 'react';
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
+import { tasksReducer } from './state/tasksReducer';
 
 function App() {
 
-  const [tasks, setTasks] = useState([
-    {
-      id: '1',
-      text: 'Моя первая задача из примера'
-    }
-  ]);
+  const [tasks, dispatch] = useReducer(tasksReducer, []);
 
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
 
   const handleDeleteTask = (idToDelete: string) => {
-    
-    const newTasks = tasks.filter(task => task.id !== idToDelete);
-    setTasks(newTasks);
-  
+
+    dispatch({ type: 'DELETE_TASK', payload: idToDelete });
+
   };
 
   const handleAddTask = (event: React.FormEvent) => {
 
     event.preventDefault();
     
-    if (inputValue.trim() === '') {
-      return;
-    };
+    if (inputValue.trim() === '') return;
 
-    const newTask = {
-      id: uuid(),
-      text: inputValue,
-    };
-
-    const newTasks = [...tasks, newTask];
+    dispatch({ type: 'ADD_TASK', payload: inputValue });
     
-    setTasks(newTasks);
-
     setInputValue('');
     setShowInput(false);
 
