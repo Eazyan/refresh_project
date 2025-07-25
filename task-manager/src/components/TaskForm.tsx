@@ -4,12 +4,13 @@ import { TasksContext } from '../state/TasksContext';
 
 
 type TaskFormProps = {
+  isVisible: boolean;
   inputValue: string;
   onInputChange: (value: string) => void;
   onFormSubmit: () => void;
 };
 
-const TaskForm: React.FC<TaskFormProps> = ({ inputValue, onInputChange, onFormSubmit }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ isVisible, inputValue, onInputChange, onFormSubmit }) => {
 
   const context = useContext(TasksContext);
   if (!context) {
@@ -30,7 +31,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ inputValue, onInputChange, onFormSu
 
   return (
 
-      <form onSubmit={handleSubmit} className='add-task-form'>
+      <form onSubmit={handleSubmit} className={`add-task-form ${isVisible ? 'visible' : ''}`}>
+
       <input
         type="text"
         placeholder="Что нужно сделать?"
@@ -39,7 +41,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ inputValue, onInputChange, onFormSu
         className='add-task-input'
         autoFocus
       />
-      <button type="submit" className='add-task-button add-task-button--in-form'>Добавить</button>
+      
+      <button 
+        type="submit" 
+        className='add-task-button add-task-button--in-form'
+        aria-label="Добавить задачу"
+      ></button>
+
     </form>
   );
 };
