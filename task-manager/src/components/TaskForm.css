@@ -9,72 +9,99 @@
   z-index: 100;
   width: 90%;
   max-width: 500px;
-  height: 48px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Общие стили для кнопки и формы, которые теперь лежат рядом, а не друг на друге */
-.add-task-button--standalone,
-.add-task-form {
-  border-radius: 24px;
-  height: 100%;
-  flex-shrink: 0; /* Запрещаем сжиматься */
-  transition: all 0.35s ease-in-out; /* Плавная и элегантная анимация */
-}
-
-
-/* Стиль кнопки добавления задачи */
-.add-task-button--standalone {
-  border: none;
+/* Кнопка добавления задачи (круглая в сжатом состоянии) */
+.add-task-button {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
   background-color: #5061FC;
+  border: none;
   color: #fff;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(80, 97, 252, 0.3);
+  transition: width 0.3s ease, border-radius 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 500;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 10px rgba(80, 97, 252, 0.3);
-  width: 180px;
-  opacity: 1;
-  transform: scaleX(1) translateX(0);
-  transform-origin: center;
+  overflow: hidden;
+  padding: 0;
 }
 
-.add-task-button--standalone:hover {
+.add-task-button:hover {
   background-color: #5b6cfd;
 }
 
-/* Скрытие кнопки при показе формы */
-.add-task-button--standalone.hidden {
-  width: 0;
-  opacity: 0;
-  transform: scaleX(0.5) translateX(-100px);
-  pointer-events: none;
-}
-
-/* Стили для формы ввода */
-.add-task-form {
+/* Иконка плюс в кнопке */
+.add-task-button__icon {
+  position: absolute;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
-  padding: 0 6px 0 20px;
-  background-color: #232638;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  width: 0;
-  opacity: 0;
-  transform: scaleX(0.5) translateX(100px);
-  pointer-events: none;
-  transform-origin: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  left: 0;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease; /* Анимация вращения */
+  opacity: 1;
+  pointer-events: none; /* Чтобы нельзя было кликнуть по иконке отдельно */
 }
 
-/* Видимая форма */
+/* Улучшение стиля иконки с использованием псевдоэлементов для красивой анимации */
+.add-task-button__icon::before,
+.add-task-button__icon::after {
+  content: '';
+  position: absolute;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.add-task-button__icon::before {
+  width: 20px;
+  height: 2px;
+}
+
+.add-task-button__icon::after {
+  width: 2px;
+  height: 20px;
+}
+
+/* Форма ввода задачи (расширенное состояние) */
+.add-task-form {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  border-radius: 28px;
+  background-color: #232638;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Улучшенная анимация */
+  cursor: pointer; /* Указатель в виде кнопки, когда форма скрыта */
+}
+
+/* Состояние формы, когда она скрыта (превращена в кнопку) */
+.add-task-form:not(.visible) {
+  width: 56px;
+  background-color: #5061FC;
+  box-shadow: 0 4px 10px rgba(80, 97, 252, 0.3);
+  pointer-events: auto; /* Разрешаем взаимодействие */
+  cursor: pointer; /* Явно указываем курсор */
+}
+
+/* Состояние формы, когда она видима */
 .add-task-form.visible {
   width: 100%;
-  opacity: 1;
-  transform: scaleX(1) translateX(0);
-  pointer-events: auto;
+  cursor: default; /* Обычный курсор для видимой формы */
 }
 
 /* Поле ввода */
@@ -83,67 +110,69 @@
   border: none;
   background: transparent;
   height: 100%;
-  padding: 0 10px;
+  padding: 0 16px;
+  padding-left: 20px;
   color: #fff;
   font-size: 0.9rem;
   outline: none;
-  min-width: 100px; /* Чтобы инпут не сжимался слишком сильно */
-  opacity: 0; /* Появится с небольшой задержкой */
-  transition: opacity 0.2s ease 0.2s;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.15s; /* Небольшая задержка для красивого появления */
 }
 
 .add-task-form.visible .add-task-input {
-    opacity: 1;
+  opacity: 1;
 }
 
 .add-task-input::placeholder {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Кнопка в форме */
-.add-task-button--in-form {
-  height: 36px;
-  min-width: 36px;
-  width: 36px;
+/* Кнопка отправки формы */
+.add-task-submit {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
   border: none;
   border-radius: 50%;
   background-color: #5061FC;
   color: white;
   cursor: pointer;
-  position: relative;
-  opacity: 0; /* Появится с небольшой задержкой */
-  transition: opacity 0.2s ease 0.2s;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s ease 0.2s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease; /* Улучшенная пружинистая анимация */
 }
 
-.add-task-form.visible .add-task-button--in-form {
-    opacity: 1;
+.add-task-form.visible .add-task-submit {
+  opacity: 1;
+  transform: scale(1);
 }
 
-/* Иконка + в кнопке формы */
-.add-task-button--in-form::before {
-  content: "➤"; /* Сменим на стрелку для отправки */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.2rem;
-  line-height: 0;
-}
-
-.add-task-button--in-form:hover {
+.add-task-submit:hover {
   background-color: #4353d9;
+  transform: scale(1.05); /* Небольшой эффект при наведении */
 }
 
-/* Иконка + для кнопки */
-.add-task-button--standalone::before {
-  content: "+";
-  font-size: 1.4rem;
-  margin-right: 8px;
+/* Иконка на кнопке отправки */
+.add-task-submit__icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Кнопка "плюс" в состоянии, когда форма видима */
+.add-task-form.visible .add-task-button__icon {
+  transform: rotate(45deg);
+  opacity: 0;
 }
 
 /* Адаптив для мобильных устройств */
 @media (max-width: 768px) {
-  .add-task-button--standalone {
-    width: 150px;
+  .task-action-container {
+    width: 85%;
   }
 }
