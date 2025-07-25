@@ -53,3 +53,31 @@
   .task-item:nth-child(3)::after {
     color: #E91E63;
   }
+
+  /* === Стили для анимации появления/исчезновения === */
+
+/* Начальное состояние, когда элемент появляется */
+.task-anim-enter {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+/* Конечное состояние, к которому элемент анимируется при появлении */
+.task-anim-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms ease-in, transform 300ms ease-in;
+}
+
+/* Начальное состояние, когда элемент начинает исчезать */
+.task-anim-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Конечное состояние, к которому элемент анимируется при исчезании */
+.task-anim-exit-active {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 300ms ease-in, transform 300ms ease-in;
+}
