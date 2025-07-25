@@ -1,20 +1,17 @@
-import React from "react";
+import React, { useContext } from 'react';
 import TaskItem from "./TaskItem";
 import './TaskList.css';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Flipper, Flipped } from 'react-flip-toolkit';
+import { TasksContext } from '../state/TasksContext';
 
-type Task = {
-    id: string;
-    text: string;
-};
+const TaskList: React.FC = () => {
+    const context = useContext(TasksContext);
+    if (!context) {
+      throw new Error('TaskList must be used within a TasksProvider');
+    }
+    const { tasks } = context;
 
-type TaskListProps = {
-    tasks: Task[];
-    handleDelete: (id: string) => void;
-}
-
-const TaskList: React.FC<TaskListProps> = ({ tasks, handleDelete }) => {
     return (
       <Flipper flipKey={tasks.map(t => t.id).join('')}>
         <TransitionGroup component="ul" className='task-list'>
@@ -31,7 +28,6 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, handleDelete }) => {
                   <TaskItem
                     ref={nodeRef}
                     task={task}
-                    handleDelete={handleDelete}
                   />
                 </Flipped>
               </CSSTransition>

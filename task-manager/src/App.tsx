@@ -1,49 +1,30 @@
-import './App.css'
-import { useState, useReducer } from 'react';
+import './App.css';
+import { useState } from 'react';
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
-import { tasksReducer } from './state/tasksReducer';
+import { TasksProvider } from './state/TasksContext';
 
 function App() {
-
-  const [tasks, dispatch] = useReducer(tasksReducer, []);
 
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
 
-  const handleDeleteTask = (idToDelete: string) => {
-
-    dispatch({ type: 'DELETE_TASK', payload: idToDelete });
-
-  };
-
-  const handleAddTask = (event: React.FormEvent) => {
-
-    event.preventDefault();
-    
-    if (inputValue.trim() === '') return;
-
-    dispatch({ type: 'ADD_TASK', payload: inputValue });
-    
-    setInputValue('');
-    setShowInput(false);
-
-  }
-
   return (
 
-      <div className='app-container'>
+    <TasksProvider>
 
+      <div className='app-container'>
+        
         <h1>Мои задачи</h1>
 
         {showInput ? (
           <TaskForm
-          inputValue={inputValue}
-          onInputChange={setInputValue}
-          onFormSubmit={handleAddTask}
+            inputValue={inputValue}
+            onInputChange={setInputValue}
+            onFormSubmit={() => setShowInput(false)}
           />
         ) : (
-          <button 
+          <button
             className='add-task-button add-task-button--standalone'
             onClick={() => setShowInput(true)}
           >
@@ -51,13 +32,12 @@ function App() {
           </button>
         )}
 
-        <TaskList
-          tasks={tasks}
-          handleDelete={handleDeleteTask}
-        />
-
+        <TaskList />
+        
       </div>
-  )
+
+    </TasksProvider>
+  );
 }
 
-export default App
+export default App;
