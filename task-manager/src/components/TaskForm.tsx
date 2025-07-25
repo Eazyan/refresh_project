@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import './TaskForm.css';
 import { TasksContext } from '../state/TasksContext'; 
 
@@ -16,9 +16,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ isVisible, inputValue, onInputChang
   if (!context) {
     throw new Error('TaskForm must be used within a TasksProvider');
   }
-
+  const inputRef = useRef<HTMLInputElement>(null);
   const { dispatch } = context;
-
+  useEffect(() => {
+    if (isVisible && inputRef.current) {
+      // Небольшая задержка, чтобы фокус сработал после окончания анимации
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 350); // 350ms - это длительность анимации из CSS
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (inputValue.trim() === '') return;
@@ -34,12 +42,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ isVisible, inputValue, onInputChang
       <form onSubmit={handleSubmit} className={`add-task-form ${isVisible ? 'visible' : ''}`}>
 
       <input
+        ref={inputRef}
         type="text"
         placeholder="Что нужно сделать?"
         value={inputValue}
         onChange={(event) => onInputChange(event.target.value)}
         className='add-task-input'
-        autoFocus
       />
       
       <button 
