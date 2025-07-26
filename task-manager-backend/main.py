@@ -1,12 +1,14 @@
-import uuid
 from typing import List
-from fastapi import FastAPI, Depends, HTTPException, Response, status
+import uuid
+
+from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from fastapi.middleware.cors import CORSMiddleware
 
 from core.db import get_db
-from models.task import Task
+from core.security import get_password_hash
+from models import Task, User
 
 app = FastAPI()
 
@@ -40,6 +42,18 @@ class TaskResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class UserCreate(BaseModel):
+    email: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: uuid.UUID
+    email: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
 # --- Эндпоинты API ---
 
 @app.get("/api/tasks", response_model=List[TaskResponse])
@@ -51,7 +65,10 @@ def get_tasks(db: Session = Depends(get_db)):
 @app.post("/api/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
     """Создать новую задачу и сохранить ее в базу данных."""
-    new_task_db = Task(text=task_data.text)
+
+    current_user = "547c36c4-3b87-46d0-b54b-1b3c9212e460"
+
+    new_task_db = Task(text=task_data.text, user_id=current_user)
     
     db.add(new_task_db)
     db.commit()
@@ -71,3 +88,20 @@ def delete_task(task_id: uuid.UUID, db: Session = Depends(get_db)):
     db.commit()
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.post("/api/users/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Создать нового пользователя и сохранить его в базу данных."""
+
+    db_user = db.query(User).filter(User.email == user_data.email).first()
+    if db_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+
+    password = get_password_hash(user_data.password)
+    new_user_db = User(email=user_data.email, password=password)
+    
+    db.add(new_user_db)
+    db.commit()
+    db.refresh(new_user_db)
+    
+    return new_user_db

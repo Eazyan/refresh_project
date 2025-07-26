@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from models.task import Task
+import models
 from core.db import Base
 
 from logging.config import fileConfig
