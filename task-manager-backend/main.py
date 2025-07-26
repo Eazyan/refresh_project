@@ -1,10 +1,16 @@
-from fastapi import FastAPI, HTTPException, Response, status
-from typing import List, Dict
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import uuid
+from typing import List
+from fastapi import FastAPI, Depends, HTTPException, Response, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+
+from core.db import get_db
+from models.task import Task
 
 app = FastAPI()
+
+# --- CORS ---
 
 origins = [
     "http://localhost:5173",
@@ -19,41 +25,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Pydantic Модели ---
+
 class TaskCreate(BaseModel):
+    """Модель для создания задачи (принимает только текст)."""
     text: str
 
-mock_tasks_data = [
-    {"id": "1", "text": "Изучить React"},
-    {"id": "2", "text": "Создать первое приложение"},
-    {"id": "3", "text": "Понять структуру проекта"},
-    {"id": "4", "text": "Настроить стили"},
-    {"id": "5", "text": "Добавить задачи"},
-]
+class TaskResponse(BaseModel):
+    """Модель для ответа (включает все поля из БД)."""
+    id: uuid.UUID
+    text: str
+    completed: bool
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+    class Config:
+        from_attributes = True
 
-@app.get("/api/tasks")
-def get_tasks() -> List[Dict[str, str]]:
-    return mock_tasks_data
+# --- Эндпоинты API ---
 
-@app.post("/api/tasks")
-def create_task(task_data: TaskCreate):
-    new_task = {
-        "id": str(uuid.uuid4()),
-        "text": task_data.text
-    }
-    mock_tasks_data.append(new_task)
-    return new_task
+@app.get("/api/tasks", response_model=List[TaskResponse])
+def get_tasks(db: Session = Depends(get_db)):
+    """Получить все задачи из базы данных."""
+    tasks = db.query(Task).all()
+    return tasks
 
-@app.delete("/api/tasks/{task_id}")
-def delete_task(task_id: str):
-    task_to_delete = next((task for task in mock_tasks_data if task["id"] == task_id), None)
+@app.post("/api/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
+    """Создать новую задачу и сохранить ее в базу данных."""
+    new_task_db = Task(text=task_data.text)
+    
+    db.add(new_task_db)
+    db.commit()
+    db.refresh(new_task_db)
+    
+    return new_task_db
+
+@app.delete("/api/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_task(task_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Найти и удалить задачу из базы данных по ее ID."""
+    task_to_delete = db.query(Task).filter(Task.id == task_id).first()
     
     if not task_to_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
-    
-    mock_tasks_data.remove(task_to_delete)
+        
+    db.delete(task_to_delete)
+    db.commit()
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)
