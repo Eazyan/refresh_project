@@ -21,20 +21,39 @@ const TaskForm: React.FC<TaskFormProps> = ({ isVisible, inputValue, onInputChang
   
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    
-    if (isVisible) {
-      if (inputValue.trim() === '') return;
-      
-      dispatch({ type: 'ADD_TASK', payload: inputValue });
-      onInputChange('');
-      onFormSubmit();
 
+    if (!isVisible) {
+        onFormSubmit();
+        return;
     }
 
-    else {
-      onFormSubmit();
+    const text = inputValue.trim();
+    if (text === '') {
+        onFormSubmit();
+        return;
     }
 
+    fetch('http://localhost:8000/api/tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: text }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(newTask => {
+        dispatch({ type: 'ADD_TASK', payload: newTask });
+        onInputChange('');
+        onFormSubmit();
+    })
+    .catch(error => {
+        console.error('There was a problem with your fetch operation:', error);
+    });
   };
 
   const handleClick = (event: React.MouseEvent) => {

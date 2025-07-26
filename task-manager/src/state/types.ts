@@ -4,5 +4,6 @@ export type Task = {
 };
 
 export type Action =
-| { type: 'ADD_TASK'; payload: string }
-| { type: 'DELETE_TASK'; payload: string };
+| { type: 'ADD_TASK'; payload: Task }
+| { type: 'DELETE_TASK'; payload: string }
+| { type: 'SET_TASKS'; payload: Task[] };

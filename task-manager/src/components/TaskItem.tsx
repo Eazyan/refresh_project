@@ -22,7 +22,23 @@ const TaskItem = React.forwardRef<HTMLLIElement, TaskItemProps>(
     const { dispatch } = context;
 
     const handleDelete = () => {
-      dispatch({ type: 'DELETE_TASK', payload: task.id });
+      fetch(`http://localhost:8000/api/tasks/${task.id}`, {
+        method: 'DELETE',
+      })
+      .then(response => {
+        // Для DELETE запросов успешным ответом может быть статус 204
+        if (response.ok) {
+          // Только теперь, когда сервер подтвердил удаление,
+          // мы обновляем состояние нашего приложения
+          dispatch({ type: 'DELETE_TASK', payload: task.id });
+        } else {
+          // Обработка возможных ошибок
+          console.error('Failed to delete task');
+        }
+      })
+      .catch(error => {
+        console.error('Error sending delete request:', error);
+      });
     };
 
     return (
