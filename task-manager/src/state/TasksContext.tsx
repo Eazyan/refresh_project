@@ -1,6 +1,7 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import { tasksReducer } from './tasksReducer';
 import type { Task, Action } from './types';
+import apiClient from '../api/axios';
 
 
 type TasksContextType = {
@@ -15,13 +16,16 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [tasks, dispatch] = useReducer(tasksReducer, []);
 
     useEffect(() => {
-
-        fetch('http://localhost:8000/api/tasks')
-        .then(response => response.json())
-        .then(data => {
-            dispatch({ type: 'SET_TASKS', payload: data })
-        });
-
+        const fetchTasks = async () => {
+            try {
+                const response = await apiClient.get('/tasks');
+                dispatch({ type: 'SET_TASKS', payload: response.data });
+            } catch (error) {
+                console.error("Failed to fetch tasks", error);
+            }
+        };
+    
+        fetchTasks();
     }, []);
 
     return (

@@ -1,6 +1,7 @@
 import React, { useContext, useRef } from 'react';
 import './TaskForm.css';
-import { TasksContext } from '../state/TasksContext'; 
+import { TasksContext } from '../state/TasksContext';
+import apiClient from '../api/axios';
 
 type TaskFormProps = {
   isVisible: boolean;
@@ -19,7 +20,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ isVisible, inputValue, onInputChang
   const formRef = useRef<HTMLFormElement>(null);
   const { dispatch } = context;
   
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!isVisible) {
@@ -33,27 +34,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ isVisible, inputValue, onInputChang
         return;
     }
 
-    fetch('http://localhost:8000/api/tasks', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: text }),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(newTask => {
-        dispatch({ type: 'ADD_TASK', payload: newTask });
-        onInputChange('');
-        onFormSubmit();
-    })
-    .catch(error => {
-        console.error('There was a problem with your fetch operation:', error);
-    });
+    try {
+      const response = await apiClient.post('/tasks', { text });
+      const newTask = response.data;
+      
+      dispatch({ type: 'ADD_TASK', payload: newTask });
+      onInputChange('');
+      onFormSubmit();
+    }
+    catch (error) {
+      console.error('Failed to create task', error);
+    }
   };
 
   const handleClick = (event: React.MouseEvent) => {
