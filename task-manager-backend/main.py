@@ -1,13 +1,16 @@
+from datetime import timedelta
 from typing import List
 import uuid
 
 from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from core.db import get_db
-from core.security import get_password_hash
+from core.security import create_access_token, get_password_hash, verify_password
+from core.config import settings
 from models import Task, User
 
 app = FastAPI()
@@ -53,6 +56,10 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 # --- Эндпоинты API ---
 
@@ -105,3 +112,23 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user_db)
     
     return new_user_db
+
+@app.post("/api/token", response_model=Token)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Получить токен для доступа к API."""
+    user = db.query(User).filter(User.email == form_data.username).first()
+    
+    if not user or not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    access_token = create_access_token(
+        data={"sub": str(user.id)}, expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
