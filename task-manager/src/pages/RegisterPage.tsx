@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../api/axios';
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,22 +13,20 @@ const RegisterPage: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+        await apiClient.post('/users/register', { email, password });
+  
+        navigate('/login');
+  
+      } catch (err: any) {
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Ошибка регистрации');
+        if (err.response && err.response.data && err.response.data.detail) {
+          setError(err.response.data.detail);
+        } else {
+          setError('Произошла ошибка при регистрации.');
+        }
+        console.error(err);
+        
       }
-
-      navigate('/login');
-
-    } catch (err: any) {
-      setError(err.message);
-    }
   };
 
   return (

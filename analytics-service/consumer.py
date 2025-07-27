@@ -1,19 +1,15 @@
+import asyncio
 import json
+from pydoc import importfile
 from uuid import UUID
 
-from kafka import KafkaConsumer
+from aiokafka import AIOKafkaConsumer
+from aiokafka.errors import KafkaConnectionError
 from sqlalchemy.orm import Session
 
 from core.db import SessionLocal
 from models.task_event import TaskEvent
 
-def get_db():
-    """Функция для получения сессии БД, как в FastAPI."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 def process_event(event: dict, db: Session):
     """
@@ -42,7 +38,7 @@ def process_event(event: dict, db: Session):
             event_type=event_type,
             task_id=UUID(task_id_str),
             task_text=data.get('text'),
-            task_owner_id=UUID(user_id_str)
+            task_user_id=UUID(user_id_str)
         )
 
         db.add(task_event)
@@ -53,30 +49,32 @@ def process_event(event: dict, db: Session):
     # elif event_type == 'TASK_DELETED':
     #     ...
 
-def main():
-    """
-    Основная функция, которая запускает консьюмер.
-    """
-    consumer = KafkaConsumer(
+async def consume_events():
+    consumer = AIOKafkaConsumer(
         'task_events',
-        bootstrap_servers=['localhost:9092'],
-        auto_offset_reset='earliest',
-        enable_auto_commit=True,
-        group_id='analytics-group',
-        value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+        bootstrap_servers='kafka:9092',
+        group_id="analytics-group",
+        value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+        retry_backoff_ms=2000
     )
+    for _ in range(5):
+        try:
+            await consumer.start()
+            print("Kafka Consumer started and listening...")
+            break
+        except KafkaConnectionError:
+            print("Kafka not available for consumer, retrying in 5s...")
+            await asyncio.sleep(5)
+    else:
+        raise Exception("Could not connect consumer to Kafka")
 
-    print("Analytics service is listening for messages on 'task_events' topic...")
-    
-    db_session_gen = get_db()
-    
-    for message in consumer:
-        event = message.value
-        with SessionLocal() as db:
-            try:
-                process_event(event, db)
-            except Exception as e:
-                print(f"Error processing event: {e}")
-
-if __name__ == "__main__":
-    main()
+    try:
+        async for msg in consumer:
+            event = msg.value
+            with SessionLocal() as db:
+                try:
+                    process_event(event, db)
+                except Exception as e:
+                    print(f"Error processing event: {e}")
+    finally:
+        await consumer.stop()

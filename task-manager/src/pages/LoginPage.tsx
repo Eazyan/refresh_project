@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../state/AuthContext';
+import apiClient from '../api/axios';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,25 +19,25 @@ const LoginPage: React.FC = () => {
     body.append('password', password);
 
     try {
-      const response = await fetch('http://localhost:8000/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body,
-      });
+        const response = await apiClient.post('/token', body, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Неверный email или пароль');
-      }
-
-      const data = await response.json();
-      
-      login(data.access_token);
-      
-      navigate('/');
+        const data = response.data;
+        if (data.access_token) {
+            login(data.access_token);
+            navigate('/');
+        } else {
+            throw new Error('Токен не был получен');
+        }
 
     } catch (err: any) {
-      setError(err.message);
+        if (err.response && err.response.data && err.response.data.detail) {
+            setError(err.response.data.detail);
+        } else {
+            setError('Произошла ошибка при входе.');
+        }
+        console.error(err);
     }
   };
 

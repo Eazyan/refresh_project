@@ -11,12 +11,20 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from core.db import get_db
-from core.kafka_producer import send_task_event
+from core.kafka_producer import startup_kafka_producer, shutdown_kafka_producer, send_task_event
 from core.redis_client import get_cache, invalidate_cache, set_cache
 from core.security import create_access_token, get_password_hash, verify_password
 from models import Task, User
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    await startup_kafka_producer()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await shutdown_kafka_producer()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
 
@@ -111,7 +119,7 @@ def get_tasks(db: Session = Depends(get_db), current_user: User = Depends(get_cu
     return tasks
 
 @app.post("/api/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
-def create_task(task_data: TaskCreate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
+async def create_task(task_data: TaskCreate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     """Создать новую задачу и сохранить ее в базу данных."""
 
     new_task_db = Task(text=task_data.text, user_id=current_user.id)
@@ -124,7 +132,7 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db),current_use
     invalidate_cache(cache_key)
 
     task_dict = TaskResponse.model_validate(new_task_db).model_dump()
-    send_task_event('TASK_CREATED', task_dict)
+    await send_task_event('TASK_CREATED', task_dict)
 
     return new_task_db
 
