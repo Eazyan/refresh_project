@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from core.db import get_db
+from core.kafka_producer import send_task_event
 from core.redis_client import get_cache, invalidate_cache, set_cache
 from core.security import create_access_token, get_password_hash, verify_password
 from models import Task, User
@@ -120,7 +121,10 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db),current_use
 
     cache_key = f"tasks_for_user_{current_user.id}"
     invalidate_cache(cache_key)
-    
+
+    task_dict = TaskResponse.model_validate(new_task_db).model_dump()
+    send_task_event('TASK_CREATED', task_dict)
+
     return new_task_db
 
 @app.delete("/api/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
