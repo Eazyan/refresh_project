@@ -18,15 +18,21 @@ const RegisterPage: React.FC = () => {
         navigate('/login');
   
       } catch (err: any) {
-
         if (err.response && err.response.data && err.response.data.detail) {
-          setError(err.response.data.detail);
+            const detail = err.response.data.detail;
+            if (Array.isArray(detail)) {
+                const firstError = detail[0];
+                const errorMessage = `${firstError.loc[1]}: ${firstError.msg}`;
+                setError(errorMessage);
+            } else {
+                setError(detail);
+    
+            }
         } else {
-          setError('Произошла ошибка при регистрации.');
+            setError('Произошла ошибка при регистрации.');
         }
         console.error(err);
-        
-      }
+    }
   };
 
   return (

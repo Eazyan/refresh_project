@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from datetime import timedelta
 from typing import List
 import uuid
@@ -7,24 +8,42 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+from pydantic.functional_validators import field_validator
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from core.config import settings
 from core.db import get_db
-from core.kafka_producer import startup_kafka_producer, shutdown_kafka_producer, send_task_event
+from core.kafka_producer import (
+    send_task_event,
+    shutdown_kafka_producer,
+    startup_kafka_producer,
+)
 from core.redis_client import get_cache, invalidate_cache, set_cache
 from core.security import create_access_token, get_password_hash, verify_password
 from models import Task, User
 
-app = FastAPI()
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Backend API startup...")
     await startup_kafka_producer()
-
-@app.on_event("shutdown")
-async def shutdown_event():
+    
+    yield
+    
+    print("Backend API shutdown...")
     await shutdown_kafka_producer()
+
+app = FastAPI(lifespan=lifespan)
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
 
@@ -60,8 +79,15 @@ class TaskResponse(BaseModel):
         from_attributes = True
 
 class UserCreate(BaseModel):
-    email: str
-    password: str
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+
+    @field_validator('password')
+    @classmethod
+    def password_must_contain_number(cls, v: str) -> str:
+        if not any(char.isdigit() for char in v):
+            raise ValueError('Password must contain at least one number')
+        return v
 
 class UserResponse(BaseModel):
     id: uuid.UUID
@@ -153,7 +179,8 @@ def delete_task(task_id: uuid.UUID, db: Session = Depends(get_db), current_user:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.post("/api/users/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register_user(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     """Создать нового пользователя и сохранить его в базу данных."""
 
     db_user = db.query(User).filter(User.email == user_data.email).first()
