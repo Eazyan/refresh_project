@@ -23,7 +23,9 @@ async def startup_kafka_producer():
         bootstrap_servers='kafka:9092',
         value_serializer=lambda v: json.dumps(v, cls=UUIDEncoder).encode('utf-8'),
         retry_backoff_ms=2000,
-        request_timeout_ms=30000
+        request_timeout_ms=30000,
+        linger_ms=100,
+        max_batch_size=16384*4
     )
     for _ in range(5): # 5 попыток
         try:

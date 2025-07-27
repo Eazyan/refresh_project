@@ -7,13 +7,12 @@ from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from pydantic import BaseModel
 from pydantic import BaseModel, EmailStr, Field
 from pydantic.functional_validators import field_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from starlette.requests import Request
 
 from core.config import settings
@@ -68,12 +67,19 @@ class TaskCreate(BaseModel):
     """Модель для создания задачи (принимает только текст)."""
     text: str
 
+class TaskUserResponse(BaseModel):
+    id: uuid.UUID
+    email: EmailStr
+
+    class Config:
+        from_attributes = True
+
 class TaskResponse(BaseModel):
-    """Модель для ответа (включает все поля из БД)."""
     id: uuid.UUID
     text: str
     completed: bool
     user_id: uuid.UUID
+    user: TaskUserResponse
 
     class Config:
         from_attributes = True
@@ -137,7 +143,7 @@ def get_tasks(db: Session = Depends(get_db), current_user: User = Depends(get_cu
     if cached_tasks is not None:
         return [TaskResponse.model_validate(task) for task in cached_tasks]
 
-    tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
+    tasks = db.query(Task).options(joinedload(Task.user)).filter(Task.user_id == current_user.id).all()
 
     tasks_to_cache = [TaskResponse.model_validate(task).model_dump() for task in tasks]
     set_cache(cache_key, tasks_to_cache)
@@ -215,3 +221,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/api/health", tags=["Health"])
+def health_check():
+    return {"status": "ok"}

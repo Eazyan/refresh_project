@@ -43,3 +43,7 @@ def get_tasks_report(db: Session = Depends(get_db)):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers=headers
     )
+
+@app.get("/api/health", tags=["Health"])
+def health_check():
+    return {"status": "ok"}
