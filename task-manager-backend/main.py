@@ -46,6 +46,7 @@ class TaskResponse(BaseModel):
     id: uuid.UUID
     text: str
     completed: bool
+    user_id: uuid.UUID
 
     class Config:
         from_attributes = True
